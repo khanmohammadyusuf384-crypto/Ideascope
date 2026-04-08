@@ -1,0 +1,17 @@
+{
+  "name": "ideascope-frontend",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "parcel src/index.html",
+    "build": "parcel build src/index.html --public-url ./"
+  },
+  "dependencies": {
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@parcel/transformer-css": "^2.13.3",
+    "parcel": "^2.13.3"
+  }
+}
