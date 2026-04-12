@@ -29,6 +29,62 @@ Constraints: ${payload.constraints}
 `;
 }
 
+const clampScore = (value, fallback) => {
+  const numericValue = Number(value);
+
+  if (!Number.isFinite(numericValue)) {
+    return fallback;
+  }
+
+  return Math.max(1, Math.min(10, Math.round(numericValue)));
+};
+
+const normalizeText = (value, fallback) => {
+  if (typeof value !== "string") {
+    return fallback;
+  }
+
+  const trimmedValue = value.trim();
+  return trimmedValue || fallback;
+};
+
+const normalizeList = (value, fallback) => {
+  if (!Array.isArray(value)) {
+    return fallback;
+  }
+
+  const normalizedItems = value
+    .filter((item) => typeof item === "string")
+    .map((item) => item.trim())
+    .filter(Boolean);
+
+  return normalizedItems.length > 0 ? normalizedItems : fallback;
+};
+
+export function normalizeEvaluationResult(result, fallbackResult) {
+  const safeResult = result && typeof result === "object" ? result : {};
+  const safeScores = safeResult.scores && typeof safeResult.scores === "object" ? safeResult.scores : {};
+
+  return {
+    title: normalizeText(safeResult.title, fallbackResult.title),
+    overallScore: clampScore(safeResult.overallScore, fallbackResult.overallScore),
+    recommendation: normalizeText(safeResult.recommendation, fallbackResult.recommendation),
+    targetAudience: normalizeText(safeResult.targetAudience, fallbackResult.targetAudience),
+    oneLiner: normalizeText(safeResult.oneLiner, fallbackResult.oneLiner),
+    scores: {
+      originality: clampScore(safeScores.originality, fallbackResult.scores.originality),
+      feasibility: clampScore(safeScores.feasibility, fallbackResult.scores.feasibility),
+      marketValue: clampScore(safeScores.marketValue, fallbackResult.scores.marketValue),
+      complexity: clampScore(safeScores.complexity, fallbackResult.scores.complexity),
+    },
+    strengths: normalizeList(safeResult.strengths, fallbackResult.strengths),
+    risks: normalizeList(safeResult.risks, fallbackResult.risks),
+    mvp: normalizeList(safeResult.mvp, fallbackResult.mvp),
+    stretchGoals: normalizeList(safeResult.stretchGoals, fallbackResult.stretchGoals),
+    positioning: normalizeText(safeResult.positioning, fallbackResult.positioning),
+  };
+}
+
 export async function evaluateWithOllama(payload, { baseUrl, model }) {
   const response = await fetch(`${baseUrl}/api/generate`, {
     method: "POST",

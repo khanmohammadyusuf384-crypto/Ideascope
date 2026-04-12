@@ -18,6 +18,10 @@ function ScoreCard({ label, value }) {
 }
 
 function Section({ title, items }) {
+  if (!Array.isArray(items) || items.length === 0) {
+    return null;
+  }
+
   return (
     <section className="result-section">
       <h3>{title}</h3>
@@ -63,11 +67,15 @@ export default function App() {
 
       setResult(data);
     } catch (submitError) {
+      setResult(null);
       setError(submitError.message);
     } finally {
       setLoading(false);
     }
   };
+
+  const evaluation = result?.result;
+  const scoreValues = evaluation?.scores;
 
   return (
     <div className="app-shell">
@@ -143,7 +151,7 @@ export default function App() {
         </form>
 
         <section className="results-panel">
-          {!result ? (
+          {!evaluation ? (
             <div className="placeholder-card">
               <h2>What you'll get</h2>
               <p>
@@ -159,35 +167,35 @@ export default function App() {
                   <p className="source-chip">
                     Source: {result.source === "ollama" ? "Ollama" : "Local fallback"}
                   </p>
-                  <h2>{result.result.title}</h2>
-                  <p>{result.result.recommendation}</p>
+                  <h2>{evaluation.title}</h2>
+                  <p>{evaluation.recommendation}</p>
                 </div>
                 <div className="overall-score">
                   <span>Overall</span>
-                  <strong>{result.result.overallScore}/10</strong>
+                  <strong>{evaluation.overallScore}/10</strong>
                 </div>
               </div>
 
               <div className="score-grid">
-                <ScoreCard label="Originality" value={result.result.scores.originality} />
-                <ScoreCard label="Feasibility" value={result.result.scores.feasibility} />
-                <ScoreCard label="Market value" value={result.result.scores.marketValue} />
-                <ScoreCard label="Complexity" value={result.result.scores.complexity} />
+                <ScoreCard label="Originality" value={scoreValues?.originality ?? "-"} />
+                <ScoreCard label="Feasibility" value={scoreValues?.feasibility ?? "-"} />
+                <ScoreCard label="Market value" value={scoreValues?.marketValue ?? "-"} />
+                <ScoreCard label="Complexity" value={scoreValues?.complexity ?? "-"} />
               </div>
 
               <div className="summary-block">
                 <h3>Target audience</h3>
-                <p>{result.result.targetAudience}</p>
+                <p>{evaluation.targetAudience}</p>
                 <h3>One-line product angle</h3>
-                <p>{result.result.oneLiner}</p>
+                <p>{evaluation.oneLiner}</p>
                 <h3>Positioning</h3>
-                <p>{result.result.positioning}</p>
+                <p>{evaluation.positioning}</p>
               </div>
 
-              <Section title="Strengths" items={result.result.strengths} />
-              <Section title="Risks" items={result.result.risks} />
-              <Section title="MVP" items={result.result.mvp} />
-              <Section title="Stretch goals" items={result.result.stretchGoals} />
+              <Section title="Strengths" items={evaluation.strengths} />
+              <Section title="Risks" items={evaluation.risks} />
+              <Section title="MVP" items={evaluation.mvp} />
+              <Section title="Stretch goals" items={evaluation.stretchGoals} />
             </div>
           )}
         </section>

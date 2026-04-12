@@ -1,7 +1,7 @@
 import cors from "cors";
 import dotenv from "dotenv";
 import express from "express";
-import { evaluateWithOllama } from "./ollama.js";
+import { evaluateWithOllama, normalizeEvaluationResult } from "./ollama.js";
 import { evaluateIdeaLocally } from "./scoring.js";
 
 dotenv.config();
@@ -44,15 +44,17 @@ app.post("/api/evaluate", async (req, res) => {
   }
 
   try {
+    const fallbackResult = evaluateIdeaLocally(payload);
+
     // Ollama is the richer path when a local model is available.
-    const result = await evaluateWithOllama(payload, {
+    const rawResult = await evaluateWithOllama(payload, {
       baseUrl: ollamaBaseUrl,
       model: ollamaModel,
     });
 
     return res.json({
       source: "ollama",
-      result,
+      result: normalizeEvaluationResult(rawResult, fallbackResult),
     });
   } catch (_error) {
     // If the model is missing or down, we still return a usable result instead of failing the app.
