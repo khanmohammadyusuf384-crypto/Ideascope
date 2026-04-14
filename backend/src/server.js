@@ -3,6 +3,7 @@ import dotenv from "dotenv";
 import express from "express";
 import { evaluateWithOllama, normalizeEvaluationResult } from "./ollama.js";
 import { evaluateIdeaLocally } from "./scoring.js";
+import { createIdea, STRUCTURE_NAMES } from "./structures.js";
 
 dotenv.config();
 
@@ -20,16 +21,28 @@ app.get("/api/health", (_req, res) => {
     service: "ideascope-backend",
     ollamaBaseUrl,
     ollamaModel,
+    availableStructures: STRUCTURE_NAMES,
   });
 });
 
 app.post("/api/evaluate", async (req, res) => {
-  const payload = {
+  const idea = createIdea({
+    userId: req.body.userId ?? null,
+    workspaceId: req.body.workspaceId ?? null,
     projectName: req.body.projectName || "",
     problem: req.body.problem || "",
     audience: req.body.audience || "",
     coreFeatures: req.body.coreFeatures || "",
     constraints: req.body.constraints || "",
+  });
+
+  // Keep the current evaluation pipeline unchanged by passing the same content fields.
+  const payload = {
+    projectName: idea.projectName,
+    problem: idea.problem,
+    audience: idea.audience,
+    coreFeatures: idea.coreFeatures,
+    constraints: idea.constraints,
   };
 
   const hasEnoughInput = [payload.projectName, payload.problem, payload.coreFeatures]
