@@ -14,6 +14,11 @@ const ollamaModel = process.env.OLLAMA_MODEL || "llama3.2:3b";
 
 app.use(cors());
 app.use(express.json());
+// Planned auth integration: add token-validation middleware here before protected routes.
+// Example future usage:
+//   app.use("/api", requireAuthToken);
+// The middleware will parse "Authorization: Bearer <token>", validate it,
+// and attach authenticated identity (for example: req.auth.userId).
 
 app.get("/api/health", (_req, res) => {
   res.json({
