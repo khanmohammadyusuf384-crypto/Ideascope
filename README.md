@@ -77,3 +77,4 @@ ollama pull llama3.2:3b
 ## Product Positioning
 
 Built a local-first idea evaluation assistant with React and Express that analyzes product concepts for originality, feasibility, MVP scope, and market value, with optional Ollama-based reasoning and a structured scoring workflow.
+This project is actively maintained.
