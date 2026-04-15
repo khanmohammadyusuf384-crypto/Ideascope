@@ -1,6 +1,7 @@
 import cors from "cors";
 import dotenv from "dotenv";
 import express from "express";
+import { login, signup } from "./auth.js";
 import { evaluateWithOllama, normalizeEvaluationResult } from "./ollama.js";
 import { evaluateIdeaLocally } from "./scoring.js";
 import { createIdea, STRUCTURE_NAMES } from "./structures.js";
@@ -28,6 +29,32 @@ app.get("/api/health", (_req, res) => {
     ollamaModel,
     availableStructures: STRUCTURE_NAMES,
   });
+});
+
+app.post("/api/auth/signup", (req, res) => {
+  const result = signup({
+    email: req.body.email,
+    password: req.body.password,
+  });
+
+  if (!result.ok) {
+    return res.status(400).json(result);
+  }
+
+  return res.status(201).json(result);
+});
+
+app.post("/api/auth/login", (req, res) => {
+  const result = login({
+    email: req.body.email,
+    password: req.body.password,
+  });
+
+  if (!result.ok) {
+    return res.status(401).json(result);
+  }
+
+  return res.json(result);
 });
 
 app.post("/api/evaluate", async (req, res) => {
