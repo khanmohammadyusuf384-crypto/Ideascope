@@ -5,6 +5,7 @@ import { login, signup } from "./auth.js";
 import { evaluateWithOllama, normalizeEvaluationResult } from "./ollama.js";
 import { evaluateIdeaLocally } from "./scoring.js";
 import { createIdea, STRUCTURE_NAMES } from "./structures.js";
+import { requireAuthToken } from "./middleware/authMiddleware.js";
 
 dotenv.config();
 
@@ -57,9 +58,9 @@ app.post("/api/auth/login", (req, res) => {
   return res.json(result);
 });
 
-app.post("/api/evaluate", async (req, res) => {
+app.post("/api/evaluate", requireAuthToken, async (req, res) => {
   const idea = createIdea({
-    userId: req.body.userId ?? null,
+    userId: req.auth.userId,
     workspaceId: req.body.workspaceId ?? null,
     projectName: req.body.projectName || "",
     problem: req.body.problem || "",

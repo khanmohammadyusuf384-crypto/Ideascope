@@ -1,4 +1,5 @@
 import crypto from "crypto";
+import jwt from "jsonwebtoken";
 
 const usersByEmail = new Map();
 
@@ -12,6 +13,14 @@ function hashPassword(password = "") {
 
 function generateToken() {
   return crypto.randomBytes(24).toString("hex");
+}
+
+function generateJWT(user) {
+  return jwt.sign(
+    { userId: user.id, email: user.email },
+    process.env.JWT_SECRET,
+    { expiresIn: "7d" }
+  );
 }
 
 export function signup({ email, password }) {
@@ -82,7 +91,7 @@ export function login({ email, password }) {
   return {
     ok: true,
     message: "Authentication successful",
-    token: generateToken(),
+    token: generateJWT(user),
     user: {
       id: user.id,
       email: user.email,
