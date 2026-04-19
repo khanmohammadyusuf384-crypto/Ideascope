@@ -36,6 +36,8 @@ function Section({ title, items }) {
 
 export default function App() {
   const [form, setForm] = useState(initialForm);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
   const [error, setError] = useState("");
@@ -45,6 +47,8 @@ export default function App() {
     setForm((current) => ({ ...current, [name]: value }));
   };
 
+  const token = localStorage.getItem("token"); // Example of retrieving a token from localStorage
+
   const handleSubmit = async (event) => {
     event.preventDefault();
     setLoading(true);
@@ -52,11 +56,12 @@ export default function App() {
 
     try {
       // The frontend only collects input; the actual evaluation happens on the backend.
+      const token = localStorage.getItem("token"); // Retrieve the token from localStorage
       const response = await fetch("http://localhost:4000/api/evaluate", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": "Bearer YOUR_TOKEN_HERE", // Replace with your actual token if needed
+          ...(token ? { Authorization: `Bearer ${token}` } : {}), // Replace with your actual token if needed
         },
         body: JSON.stringify(form),
       });
@@ -75,6 +80,26 @@ export default function App() {
     }
   };
 
+  const handleLogin = async () => {
+    try {
+      const res = await fetch("http://localhost:4000/api/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.message || "Login failed.");
+      }
+
+      localStorage.setItem("token", data.token); // Store the token in localStorage
+      alert("Login successful!");
+    } catch (err) {
+      alert(err.message);
+    }
+  };
+
   const evaluation = result?.result;
   const scoreValues = evaluation?.scores;
 
@@ -90,6 +115,25 @@ export default function App() {
       </div>
 
       <main className="layout">
+        <div style={{ marginBottom: "20px" }}>
+          <h3>Login</h3>
+
+          <input
+            placeholder="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
+          <input
+            placeholder="Password"
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
+          <button type="button" onClick={handleLogin}>
+            Login
+          </button>
+        </div>
+
         <form className="idea-form" onSubmit={handleSubmit}>
           <label>
             Project name
