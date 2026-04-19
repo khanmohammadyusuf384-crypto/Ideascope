@@ -1,7 +1,6 @@
 import crypto from "crypto";
 import jwt from "jsonwebtoken";
-
-const usersByEmail = new Map();
+import { User } from "./models/User.js";
 
 function normalizeEmail(email = "") {
   return String(email).trim().toLowerCase();
@@ -23,7 +22,7 @@ function generateJWT(user) {
   );
 }
 
-export function signup({ email, password }) {
+export async function signup({ email, password }) {
   const normalizedEmail = normalizeEmail(email);
   const normalizedPassword = String(password ?? "");
 
@@ -34,21 +33,19 @@ export function signup({ email, password }) {
     };
   }
 
-  if (usersByEmail.has(normalizedEmail)) {
+  const existing = await User.findOne({ email: normalizedEmail });
+  if (existing) {
     return {
       ok: false,
       message: "User already exists",
     };
   }
 
-  const user = {
-    id: crypto.randomUUID(),
+  const user = await User.create({ 
     email: normalizedEmail,
     passwordHash: hashPassword(normalizedPassword),
     createdAt: new Date().toISOString(),
-  };
-
-  usersByEmail.set(normalizedEmail, user);
+  });
 
   return {
     ok: true,
@@ -61,7 +58,7 @@ export function signup({ email, password }) {
   };
 }
 
-export function login({ email, password }) {
+export async function login({ email, password }) {
   const normalizedEmail = normalizeEmail(email);
   const normalizedPassword = String(password ?? "");
 
@@ -72,7 +69,8 @@ export function login({ email, password }) {
     };
   }
 
-  const user = usersByEmail.get(normalizedEmail);
+  const user = await User.findOne({ email: normalizedEmail });
+
   if (!user) {
     return {
       ok: false,

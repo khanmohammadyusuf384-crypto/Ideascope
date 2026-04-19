@@ -6,8 +6,11 @@ import { evaluateWithOllama, normalizeEvaluationResult } from "./ollama.js";
 import { evaluateIdeaLocally } from "./scoring.js";
 import { createIdea, STRUCTURE_NAMES } from "./structures.js";
 import { requireAuthToken } from "./middleware/authMiddleware.js";
-
+import { connectDB } from "./db.js";
 dotenv.config();
+
+
+console.log("FULL ENV", process.env);
 
 const app = express();
 const port = Number(process.env.PORT || 4000);
@@ -32,8 +35,8 @@ app.get("/api/health", (_req, res) => {
   });
 });
 
-app.post("/api/auth/signup", (req, res) => {
-  const result = signup({
+app.post("/api/auth/signup", async (req, res) => {
+  const result = await signup({
     email: req.body.email,
     password: req.body.password,
   });
@@ -45,8 +48,8 @@ app.post("/api/auth/signup", (req, res) => {
   return res.status(201).json(result);
 });
 
-app.post("/api/auth/login", (req, res) => {
-  const result = login({
+app.post("/api/auth/login", async (req, res) => {
+  const result = await login({
     email: req.body.email,
     password: req.body.password,
   });
@@ -110,6 +113,8 @@ app.post("/api/evaluate", requireAuthToken, async (req, res) => {
     });
   }
 });
+
+await connectDB();
 
 app.listen(port, () => {
   console.log(`IdeaScope backend running on http://localhost:${port}`);
