@@ -38,6 +38,7 @@ export default function App() {
   const [form, setForm] = useState(initialForm);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [isSignup, setIsSignup] = useState(false);
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
   const [error, setError] = useState("");
@@ -100,6 +101,23 @@ export default function App() {
     }
   };
 
+  const handleSignup = async () => {
+    const res = await fetch("http://localhost:4000/api/auth/signup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+        throw new Error(data.message || "Signup failed.");
+    }
+
+    await handleLogin(); // Automatically log in the user after successful signup
+  };
+
+
   const evaluation = result?.result;
   const scoreValues = evaluation?.scores;
 
@@ -116,7 +134,7 @@ export default function App() {
 
       <main className="layout">
         <div style={{ marginBottom: "20px" }}>
-          <h3>Login</h3>
+          <h3>{isSignup ? "Signup" : "Login"}</h3>
 
           <input
             placeholder="Email"
@@ -129,9 +147,16 @@ export default function App() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
           />
-          <button type="button" onClick={handleLogin}>
-            Login
+          <button type="button" onClick={isSignup ? handleSignup : handleLogin}>
+            {isSignup ? "Signup" : "Login"}
           </button>
+
+          <p
+            onClick={() => setIsSignup(!isSignup)}
+            style={{ cursor: "pointer", marginTop: "10px" }}
+          >
+            {isSignup ? "Already have an account? Login" : "Don't have an account? Signup"}
+          </p>
         </div>
 
         <form className="idea-form" onSubmit={handleSubmit}>
