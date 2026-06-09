@@ -1,10 +1,12 @@
 import mongoose from "mongoose";
 
+const LOCAL_MONGO_URI = "mongodb://127.0.0.1:27017/ideascope";
+
 export async function connectDB() {
   try {
-    const uri = process.env.MONGO_URI;
+    const uri = process.env.MONGO_URI || LOCAL_MONGO_URI;
 
-    console.log("Using URI:", uri); // 👈 debug
+    console.log("MongoDB URI:", process.env.MONGO_URI ? "configured" : "using local default");
 
     await mongoose.connect(uri);
 
